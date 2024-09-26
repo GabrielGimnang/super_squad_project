@@ -104,6 +104,41 @@ app.put('/update-user/:currentName/:currentEmail', async (req, res) => {
     }
 });
 
+app.delete('/user/:name/:email', async (req, res) => {
+    try {
+        console.log(req.params.name)
+        console.log(req.params.email)
+        const { name, email } = req.params;
+        let users = [];
+        try {
+            const data = await fs.readFile(dataPath, 'utf8');
+            // parse the data
+            users = JSON.parse(data);
+        } catch (error) {
+            return res.status(404).send('File data not found');
+        }
+        // cache the userIndex based on a matching name and email
+        const userIndex = users.findIndex(user => user.name === name && user.email === email);
+        // handle a situation where the infex does NOT exist
+        if (userIndex === -1) {
+            return res.status(404)
+        }
+        // splice the users array with the intended delete name and email
+        users.splice(userIndex, 1)
+        try {
+            await fs.writeFile(dataPath, JSON.stringify(users, null, 2))
+        } catch (error) {
+            console.error("Failed to weite to the database")
+        }
+        console.log(userIndex);
+        console.log(users);
+        return res.send('successfully deleted user')
+        // send a success deleted message
+    } catch (error) {
+        res.status(500).send("There was a problem")
+    }
+})
+
 // Start the server
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {

@@ -4,15 +4,24 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Contact Form</title>
+    <style>
+      h1 {
+        color: red;
+      }
+      th {
+        padding: 3px;
+        border: black;
+      }
+    </style>
   </head>
   <body>
-    <h1>Contact Form</h1>
+    <h1>Hero Form</h1>
     <form action="/submit-form" method="POST">
-      <label for="name">Name:</label>
+      <label for="name">Hero Name:</label>
       <input type="text" id="name" name="name" required /><br /><br />
-      <label for="email">Email:</label>
-      <input type="email" id="email" name="email" required /><br /><br />
-      <label for="message">Message:</label><br />
+      <label for="email">Universe:</label>
+      <input type="text" id="email" name="email" required /><br /><br />
+      <label for="message">Powers:</label><br />
       <textarea
         id="message"
         name="message"
@@ -23,24 +32,35 @@
       ><br /><br />
       <input type="submit" value="Submit" />
     </form>
-    <h1>User Management</h1>
+    <h1>Hero Management</h1>
+    <h2></h2>
     <form id="updateForm">
-      <label for="currentName">Current name:</label>
+      <label for="currentName">Current Hero Name:</label>
       <input type="text" id="currentName" required /><br /><br />
-      <label for="currentEmail">Current email:</label>
-      <input type="email" id="currentEmail" required /><br /><br />
-      <label for="newName">New name:</label>
+      <label for="currentEmail">Current Universe:</label>
+      <input type="text" id="currentEmail" required /><br /><br />
+      <label for="newName">New Hero Name:</label>
       <input type="text" id="newName" required /><br /><br />
-      <label for="newEmail">New email:</label>
-      <input type="email" id="newEmail" required /><br /><br />
-      <button type="submit">Update User</button>
+      <label for="newEmail">New Universe:</label>
+      <input type="text" id="newEmail" required /><br /><br />
+      <button type="submit">Update Hero</button>
     </form>
-    <h1>Show Users</h1>
+    <h2>Delete Hero</h2>
+    <form id="delete-user">
+      <label for="delete-name">Hero:</label>
+      <input type="text" id="delete-name" /> <br /><br />
+      <label for="delete-email">Universe:</label>
+      <input type="text" id="delete-email" /> <br /><br />
+      <button type="submit">Delete Hero</button>
+    </form>
+
+    <h1>Show Heroes</h1>
     <table id="usersTable">
       <thead>
         <tr>
-          <th>User Name</th>
-          <th>User Email</th>
+          <th>Hero Name</th>
+          <th>Universe</th>
+          <th>Powers</th>
         </tr>
       </thead>
       <tbody id="userTableBody">
@@ -70,22 +90,43 @@
             const data = await response.json();
             console.log(data);
             renderUsers();
-            // alert("Message is: " + data.message);
           } catch (error) {
             alert("Error updating user: " + error.message);
           }
         });
+      document
+        .getElementById("delete-user")
+        .addEventListener("submit", async (e) => {
+          e.preventDefault();
+          const name = document.getElementById("delete-name").value;
+          const email = document.getElementById("delete-email").value;
+          try {
+            const response = await fetch(`/user/${name}/${email}`, {
+              method: "DELETE",
+            });
+            if (!response.ok) {
+              throw new Error("Problem fetching delete endpoint");
+            }
+            const data = await response.text();
+            console.log(data);
+            renderUsers();
+          } catch (error) {
+            console.error(
+              "There was a problem, skill issue " +
+                error.message +
+                " GG bro you threw"
+            );
+          }
+        });
+
       async function fetchUsers() {
         try {
           const response = await fetch("/users");
           if (!response.ok) {
             throw new Error("Error fetching users. Response not ok");
           }
-          // there could be an error getting response/fetching the endpoint
           console.log(response);
           const users = await response.json();
-          // there could be an error parsing the response
-          // console.log(users);
           return users;
         } catch (error) {
           console.error("There was a problem");
@@ -100,7 +141,7 @@
           const users = await fetchUsers();
           if (Array.isArray(users) && users.length > 0) {
             users.forEach((user) => {
-              const row = `<tr><td>${user.name}</td><td>${user.email}</td></tr>`;
+              const row = `<tr><td>${user.name}</td><td>${user.email}</td><td>${user.message}</td></tr>`;
               tableBody.innerHTML += row;
             });
           }
